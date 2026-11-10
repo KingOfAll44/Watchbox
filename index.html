@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>WatchBox Player</title>
+<style>
+  :root{--bg:#0e0f13;--card:#181a21;--line:#262934;--text:#f2f3f7;--mut:#9aa0b0;--acc:#ff5a36}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .logo{font-weight:800;font-size:20px}.logo span{color:var(--acc)}
+  main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}
+  .player{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden}
+  .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  h2{font-size:18px;margin:14px 0 4px}
+  .mut{color:var(--mut);font-size:14px;margin:0 0 12px}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px}
+  .chip{flex:none;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;cursor:pointer}
+  .chip.on{background:var(--text);color:var(--bg)}
+  form{display:flex;gap:8px;margin-top:8px}
+  input{flex:1;min-width:0;background:#11131a;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 12px;font-size:15px}
+  button.go{background:var(--acc);border:0;color:#fff;border-radius:10px;padding:0 16px;font-weight:600;font:inherit;cursor:pointer}
+</style>
+</head>
+<body>
+<header><div class="logo">Watch<span>Box</span></div></header>
+<main>
+  <div class="chips" id="chips"></div>
+  <div class="player"><iframe id="fr" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+  <h2 id="title"></h2>
+  <p class="mut" id="desc"></p>
+  <p class="mut">Tap the ☰ icon in the player to pick any video from the channel's uploads.</p>
+  <form id="paste"><input id="url" placeholder="Paste any YouTube video or playlist link"><button class="go">Play</button></form>
+</main>
+<script>
+const CH=[
+ {name:"MrBeast",list:"UUX6OQ3DkcsbYNE6H8uQQuVA",desc:"Giant challenges and crazy giveaways."},
+ {name:"Mark Rober",list:"UUY1kMZp36IQSyNx_9h4mpCg",desc:"Science and engineering builds."},
+ {name:"Nick DiGiovanni",list:"UUMyOj6fhvKFMjxUCp3b_3gA",desc:"Over-the-top cooking."},
+ {name:"Dude Perfect",list:"UURijo3ddMTht_IHyNSNXpNQ",desc:"Trick shots and sports battles."}
+];
+const fr=document.getElementById("fr");
+const base="https://www.youtube-nocookie.com/embed/";
+let cur=0;
+function chips(){const el=document.getElementById("chips");el.innerHTML="";
+  CH.forEach((c,i)=>{const b=document.createElement("button");b.className="chip"+(i===cur?" on":"");b.textContent=c.name;b.onclick=()=>pick(i);el.appendChild(b)})}
+function pick(i){cur=i;const c=CH[i];fr.src=base+"videoseries?list="+c.list+"&rel=0&playsinline=1";
+  document.getElementById("title").textContent=c.name+" — latest uploads";document.getElementById("desc").textContent=c.desc;chips()}
+document.getElementById("paste").onsubmit=e=>{e.preventDefault();const u=document.getElementById("url").value.trim();if(!u)return;
+  let v=null,l=null;try{const x=new URL(u);l=x.searchParams.get("list");v=x.searchParams.get("v");
+    if(!v&&x.hostname.includes("youtu.be"))v=x.pathname.slice(1);
+    if(!v){const m=x.pathname.match(/\/(shorts|embed|live)\/([\w-]{6,})/);if(m)v=m[2]}}catch(err){if(/^[\w-]{11}$/.test(u))v=u}
+  if(v)fr.src=base+v+"?autoplay=1&rel=0&playsinline=1"+(l?"&list="+l:"");else if(l)fr.src=base+"videoseries?list="+l;else return;
+  document.getElementById("title").textContent="Your video";document.getElementById("desc").textContent="";cur=-1;chips()};
+pick(0);
+</script>
+</body>
+</html>
